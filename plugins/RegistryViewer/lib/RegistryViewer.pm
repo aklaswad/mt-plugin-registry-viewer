@@ -158,11 +158,12 @@ sub find_desc {
     return if !scalar @$path;
     if ( $idx == scalar @$path ) {
         my $end_path;
+        my @path = @$path;
         my @descs;
-        while ( scalar @$path ) {
-            $end_path = ( pop @$path ) . ( $end_path ? '/' . $end_path : '' );
+        while ( scalar @path ) {
+            $end_path = ( pop @path ) . ( $end_path ? '/' . $end_path : '' );
             my $description = MT->registry(
-                'registry_descriptions', @$path, $end_path
+                'registry_descriptions', @path, $end_path
             );
             if ( 'HASH' eq ref $description ) {
                 $description = $description->{_};
@@ -172,7 +173,7 @@ sub find_desc {
                     my $code = MT->handler_to_coderef($description);
                     $description = $code->($orig_path, $path);
                 }
-                my $for = join ( '/', @$path ) . '/' . $end_path;
+                my $for = join ( '/', @path ) . '/' . $end_path;
                 $for = '/' . $for if $for !~ m{^/};
                 $description = {
                     for  => $for,
