@@ -157,20 +157,31 @@ sub find_desc {
     return if !defined $path;
     return if !scalar @$path;
     if ( $idx == scalar @$path ) {
-        my $description = MT->registry( 'registry_descriptions', @$path );
-        if ( 'HASH' eq ref $description ) {
-            $description = $description->{_};
+        my $end_path;
+        my @descs;
+        while ( scalar @$path ) {
+            $end_path = ( pop @$path ) . ( $end_path ? '/' . $end_path : '' );
+            my $description = MT->registry(
+                'registry_descriptions', @$path, $end_path
+            );
+            if ( 'HASH' eq ref $description ) {
+                $description = $description->{_};
+            }
+            if ( $description ) {
+                if ( $description =~ /sub \{/ || $description =~ /^\$.*::/ ) {
+                    my $code = MT->handler_to_coderef($description);
+                    $description = $code->($orig_path, $path);
+                }
+                my $for = join ( '/', @$path ) . '/' . $end_path;
+                $for = '/' . $for if $for !~ m{^/};
+                $description = {
+                    for  => $for,
+                    desc => $description,
+                };
+                push @descs, $description;
+            }
         }
-        return () unless $description;
-        if ( $description =~ /sub \{/ || $description =~ /^\$.*::/ ) {
-            my $code = MT->handler_to_coderef($description);
-            $description = $code->($orig_path, $path);
-        }
-        $description = {
-            for => '/' . join( '/', @$path ),
-            desc => $description,
-        };
-        return ( $description );
+        return @descs;
     }
     my @clone = @$path;
     my @descriptions;
