@@ -7,7 +7,7 @@ applications:
                 mode: registry_viewer
                 order: 7777
         methods:
-            registry_viewer: $RegistryViewer::RegistryViewer::run
+            registry_viewer: $RegistryViewer::RegistryViewer::view
 
 registry_descriptions:
     applications:

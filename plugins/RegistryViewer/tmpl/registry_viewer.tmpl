@@ -68,9 +68,26 @@ ul#breadcrumb li a:hover {
     color: #999;
 }
 
+.toggle-mt-menu {
+    float: right;
+}
+
 </style>
 </mt:setvarblock>
+
+<mt:if name="mt_nav">
 <mt:include name="include/header.tmpl" />
+<mt:else>
+<html>
+<head>
+<title>Registry Viewer</title>
+<mt:var name="html_head">
+</head>
+<body>
+</mt:if>
+
+<span class="toggle-mt-menu"><a href="<mt:var name="toggle_mt_nav_link">"><mt:if name="mt_nav">Remove MT menus<mt:else>Back to MT</mt:if></a></span>
+
 <ul id="breadcrumb">
 <mt:loop name="breadcrumb">
     <li>
@@ -131,4 +148,10 @@ ul#breadcrumb li a:hover {
     </ul>
     </p>
 </mt:if>
+
+<mt:if name="mt_nav">
 <mt:include name="include/footer.tmpl" />
+<mt:else>
+</body>
+</html>
+</mt:if>

@@ -7,20 +7,51 @@ use MT::Util;
 
 sub uri {
     my @path = @_;
+    my $opts = {};
+    if ( ref $path[0] eq 'HASH' ) {
+        $opts = $path[0];
+        @path = @{ $opts->{path} };
+    }
+    my $app   = MT->app;
     my %param = (
         mode => 'registry_viewer',
         args => {
-            path => join( ',', @path ),
+            ( scalar @path ? ( path => join( ',', @path ) ) : () ),
+            mt_nav => defined $opts->{mt_nav}
+            ? $opts->{mt_nav}
+            : $app->{__mt_nav},
         },
     );
-    MT->app->uri(%param);
+    $app->uri(%param);
+}
+
+sub view {
+    my $app = shift;
+    my $path = $app->param('path');
+    my $mt_nav = $app->param('mt_nav');
+    $mt_nav = 1 if !defined $mt_nav;
+    local $app->{__mt_nav} = $mt_nav;
+    my @paths = split ',', $path;
+    my $plugin = MT->component('RegistryViewer');
+    my $param = run($plugin, @paths)
+        or return $app->error( $plugin->errstr );
+    $param->{mt_nav} = $mt_nav;
+    $param->{toggle_mt_nav_link} = uri({
+        path   => \@paths,
+        mt_nav => $mt_nav ? 0 : 1,
+    });
+    if ( !$mt_nav ) {
+        $param->{build_menus} = 0;
+        $param->{build_blog_selector} = 0;
+        $param->{build_compose_menus} = 0;
+    }
+    return $app->load_tmpl('registry_viewer.tmpl', $param);
 }
 
 sub run {
-    my $app = shift;
+    my $plugin = shift;
+    my @paths = @_;
     my %param;
-    my $path = $app->param('path');
-    my @paths = split ',', $path;
     my $current_path = $paths[-1];
     my @parent_path;
     my @breadcrumb;
@@ -54,7 +85,7 @@ sub run {
         my $type = ref $reg || 'scalar';
         if ( $last_type ) {
             $type eq $last_type
-                or return $app->errtrans('Multiple types mixed registry.');
+                or return $plugin->errtrans('Multiple types mixed registry.');
         }
         $last_type = $type;
         $registries{$c} = $reg;
@@ -80,7 +111,13 @@ sub run {
                 };
             }
             my @descs = find_desc( path => \@child_paths, no_wild => 1 );
-            push @child_keys, { link => $link, label => $child, values => \@values, descs => \@descs };
+            push @child_keys,
+                {
+                link   => $link,
+                label  => $child,
+                values => \@values,
+                descs  => \@descs
+                };
         }
         $param{child_keys} = \@child_keys;
     }
@@ -108,7 +145,7 @@ sub run {
         }
         $param{registries} = \@registries;
     }
-    return $app->load_tmpl('registry_viewer.tmpl', \%param);
+    return \%param;
 }
 
 sub find_desc {
