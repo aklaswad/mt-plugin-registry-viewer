@@ -1,0 +1,134 @@
+<mt:setvarblock name="page_title">Registry Viewer</mt:setvarblock>
+<mt:setvarblock name="html_head" append="1">
+<style type="text/css">
+h3 {
+    font-size: 1.4em;
+    border-bottom: 1px solid #777;
+}
+
+h4 {
+    font-size: 1.2em;
+}
+
+ul#breadcrumb li {
+    display: inline-block;
+    margin: 0;
+    font-size: 2.0em;
+}
+
+ul#breadcrumb li a {
+    text-decoration: none;
+    color: #777;
+}
+
+#breadcrumb .spacer {
+    margin: 0 8px;
+}
+
+ul#breadcrumb li a:hover {
+    text-decoration: underline;
+    color: #000;
+}
+
+.child-link {
+    color: #333;
+    font-size: 1.1em;
+    text-decoration: none;
+}
+
+.child-link:hover {
+    color: #000;
+    font-size: 1.1em;
+    text-decoration: underline;
+}
+
+.component-name {
+    border: 1px solid #ddd;
+    padding: 1px 3px;
+    color: #888;
+    background-color: #cdf;
+    font-size: 0.8em;
+}
+
+.component-name.core {
+    border: 1px solid #ddd;
+    padding: 1px 3px;
+    color: #888;
+    background-color: #cfd;
+    font-size: 0.86em;
+}
+
+.hash-value {
+    color: #999;
+    font-size: 0.86em;
+}
+
+.short-desc {
+    font-size: 0.92em;
+    color: #999;
+}
+
+</style>
+</mt:setvarblock>
+<mt:include name="include/header.tmpl" />
+<ul id="breadcrumb">
+<mt:loop name="breadcrumb">
+    <li>
+        <span class="spacer">/</span><a href="<mt:var name="link">"><mt:var name="label"></a>
+    </li>
+</mt:loop>
+</ul>
+
+<p>Type: <mt:var name="type"></p>
+
+<mt:loop name="descriptions">
+<mt:if name="__first__">
+<h3>Descriptions</h3>
+<dl>
+</mt:if>
+<dt><mt:var name="for"></dt>
+<dd><mt:var name="desc"><dd>
+<mt:if name="__last__"></dl></mt:if>
+</mt:loop>
+
+<mt:if name="type" eq="HASH">
+    <p><h3>Values</h3>
+    <ul>
+    <mt:loop name="child_keys">
+        <dl>
+            <dt><a href="<mt:var name="link">" class="child-link"><mt:var name="label"></a></dt>
+            <dd>
+                <mt:loop name="descs">
+                    <p class="short-desc"><mt:var name="desc"></p>
+                </mt:loop>
+
+            <mt:if name="values"><mt:loop name="values">
+                <span class="component-name <mt:var name="component">"><mt:var name="component"></span>
+                <span class="hash-value"><mt:var name="value" trim_to="30" encode_html="1"></span>
+            </mt:loop></mt:if>
+            </dd>
+        </dl>
+    </mt:loop>
+    </ul>
+    </p>
+<mt:else name="registries">
+    <p id="registry_value">
+    <h3>values</h3>
+    <ul>
+    <mt:loop name="registries">
+        <li>
+            <span class="component-name <mt:var name="__component">"><mt:var name="__component"></span>
+            <mt:if name="registry_value"><mt:var name="registry_value" encode_html="1"></mt:if>
+            <mt:if name="registry_values">
+                <mt:loop name="registry_values">
+                    <mt:if name="__first__"><ul></mt:if>
+                    <li><mt:var name="__value__" encode_html="1"></li>
+                    <mt:if name="__last__"></ul></mt:if>
+                </mt:loop>
+            </mt:if>
+        </li>
+    </mt:loop>
+    </ul>
+    </p>
+</mt:if>
+<mt:include name="include/footer.tmpl" />
