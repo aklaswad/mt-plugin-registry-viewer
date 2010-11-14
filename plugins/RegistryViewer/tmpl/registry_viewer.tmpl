@@ -91,7 +91,12 @@ ul#breadcrumb li a:hover {
 <ul id="breadcrumb">
 <mt:loop name="breadcrumb">
     <li>
-        <span class="spacer">/</span><a href="<mt:var name="link">"><mt:var name="label"></a>
+        <span class="spacer">/</span>
+        <mt:if name="__last__">
+            <mt:var name="label">
+        <mt:else>
+            <a href="<mt:var name="link">"><mt:var name="label"></a>
+        </mt:if>
     </li>
 </mt:loop>
 </ul>
