@@ -10,7 +10,7 @@ applications:
             registry_viewer: $RegistryViewer::RegistryViewer::view
 
 registry_descriptions:
-    applications:    applications.yaml
-    tags:            tags.yaml
-    listing_screens: listing_screens.yaml
-    list_properties: list_properties.yaml
+    applications:    desc_applications.yaml
+    tags:            desc_tags.yaml
+    listing_screens: desc_listing_screens.yaml
+    list_properties: desc_list_properties.yaml
