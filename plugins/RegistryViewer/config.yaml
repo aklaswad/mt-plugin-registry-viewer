@@ -10,7 +10,54 @@ applications:
             registry_viewer: $RegistryViewer::RegistryViewer::view
 
 registry_descriptions:
-    applications:    desc_applications.yaml
-    tags:            desc_tags.yaml
-    listing_screens: desc_listing_screens.yaml
-    list_properties: desc_list_properties.yaml
+    author_link:              Author link of this component
+    author_name:              Author name of this component
+    id:                       Id of this component
+    key:                      Key of this component
+    name:                     Name of this component
+    l10n_class:               Class name of Localization handler of this component
+    plugin_link:              Documentation url of this component
+    schema_version:           Schema version number of this component
+    version:                  Version number of this component
+
+    applications:             desc_applications.yaml
+    archive_types:            desc_archive_types.yaml
+    archivers:                desc_archivers.yaml
+    backup_instructions:      desc_backup_instructions.yaml
+    blog_config_template:     desc_blog_config_template.yaml
+    callbacks:                desc_callbacks.yaml
+    captcha_providers:        desc_captcha_providers.yaml
+    commenter_authenticators: desc_commenter_authenticators.yaml
+    config_settings:          desc_config_settings.yaml
+    db_form_data:             desc_db_form_data.yaml
+    default_templates:        desc_default_templates.yaml
+    description:              desc_description.yaml
+    doc_link:                 desc_doc_link.yaml
+    import_formats:           desc_import_formats.yaml
+    init_app:                 desc_init_app.yaml
+    junk_filters:             desc_junk_filters.yaml
+    list_actions:             desc_list_actions.yaml
+    list_properties:          desc_list_properties.yaml
+    listing_screens:          desc_listing_screens.yaml
+    object_drivers:           desc_object_drivers.yaml
+    object_types:             desc_object_types.yaml
+    permissions:              desc_permissions.yaml
+    ping_servers:             desc_ping_servers.yaml
+    registry_descriptions:    desc_registry_descriptions.yaml
+    richtext_editors:         desc_richtext_editors.yaml
+    settings:                 desc_settings.yaml
+    summaries:                desc_summaries.yaml
+    system_config_template:   desc_system_config_template.yaml
+    system_filters:           desc_system_filters.yaml
+    tags:                     desc_tags.yaml
+    task_workers:             desc_task_workers.yaml
+    tasks:                    desc_tasks.yaml
+    template_sets:            desc_template_sets.yaml
+    template_snippets:        desc_template_snippets.yaml
+    text_filters:             desc_text_filters.yaml
+    theme_element_handlers:   desc_theme_element_handlers.yaml
+    themes:                   desc_themes.yaml
+    upgrade_data:             desc_upgrade_data.yaml
+    upgrade_functions:        desc_upgrade_functions.yaml
+    widgets:                  desc_widgets.yaml
+
