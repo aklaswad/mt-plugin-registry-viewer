@@ -10,43 +10,7 @@ applications:
             registry_viewer: $RegistryViewer::RegistryViewer::view
 
 registry_descriptions:
-    applications:
-        _: Register point for applications based on MT::App.
-        *:
-            _: If movable type is working as instance of this application, this hash tree can be an alias of root registry.
-    tags:
-        _: |
-            Start point for tag definitions.
-        block:
-            _: Regsiter block tag handlers.
-        function:
-            _: Regsiter function tag handlers.
-        modifier:
-            _: Regsiter text filters.
-    listing_screens:
-        *:
-            _: Type of list you want to show.
-            object_label:
-                _: Name of object you want to display.
-        asset:
-            _: Definitions for the asset list screen.
-    list_properties:
-        _: Start point for definitions of elements of each list screens.
-        *:
-            _: List class name for the properties under this.
-            *:
-                _: |
-                    sub {
-                        my ($paths) = @_;
-                        require MT::ListProperty;
-                        my ( $class, $id ) = ( $paths->[1], $paths->[2] );
-                        my $prop = MT::ListProperty->instance($class, $id);
-                        my $base = $prop->{base};
-                        my $out = 'Attributes of list properties.';
-                        if ( $base ) {
-                            my ( $base_class, $base_id ) = split '\.', $base;
-                            my $link = RegistryViewer::uri( 'list_properties', $base_class, $base_id );
-                            $out .= qq{<p>$class.$id is inheriting some attributes from: <a href="$link">$base</a></p>};
-                        }
-                        return $out;
-                    } 
+    applications:    applications.yaml
+    tags:            tags.yaml
+    listing_screens: listing_screens.yaml
+    list_properties: list_properties.yaml

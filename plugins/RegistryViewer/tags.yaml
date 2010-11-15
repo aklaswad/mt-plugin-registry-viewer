@@ -1,0 +1,8 @@
+_: |
+    Start point for tag definitions.
+block: |
+    Regsiter block tag handlers.
+function: |
+    Regsiter function tag handlers.
+modifier: |
+    Regsiter text filters.

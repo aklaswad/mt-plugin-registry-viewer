@@ -1,0 +1,13 @@
+_: |
+    Register point for applications based on MT::App.
+*: |
+    If movable type is working as instance of this application, this hash tree can be an alias of root registry.
+
+*/handler: |
+    Set a Perl Class name for 
+
+
+atom: |
+    An Atom Publishing API interface for communicating with Movable Type.
+
+

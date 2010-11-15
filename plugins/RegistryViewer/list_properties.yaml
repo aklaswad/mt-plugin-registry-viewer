@@ -1,0 +1,17 @@
+_: Start point for definitions of elements of each list screens.
+*: List class name for the properties under this.
+*/*: |
+    sub {
+        my ($paths) = @_;
+        require MT::ListProperty;
+        my ( $class, $id ) = ( $paths->[1], $paths->[2] );
+        my $prop = MT::ListProperty->instance($class, $id);
+        my $base = $prop->{base};
+        my $out = 'Attributes of list properties.';
+        if ( $base ) {
+            my ( $base_class, $base_id ) = split '\.', $base;
+            my $link = RegistryViewer::uri( 'list_properties', $base_class, $base_id );
+            $out .= qq{<p>$class.$id is inheriting some attributes from: <a href="$link">$base</a></p>};
+        }
+        return $out;
+    }

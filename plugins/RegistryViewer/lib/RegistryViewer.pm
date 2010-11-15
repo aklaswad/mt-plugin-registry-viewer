@@ -126,14 +126,17 @@ sub run {
         for my $c ( keys %registries ) {
             my $reg = $registries{$c};
             my %reg_param;
-            if ( 'ARRAY' eq ref $reg ) {
+            if ( $current_path =~ /label$/ ) {
+                $reg_param{registry_value} = ref $reg eq 'CODE' ? $reg->() : $reg;
+            }
+            elsif ( 'ARRAY' eq ref $reg ) {
                 $reg_param{registry_values} = $reg;
+            }
+            elsif ( 'CODE' eq ref $reg ) {
+                $reg_param{registry_value} = 'CODE';
             }
             elsif ( !ref $reg ) {
                 $reg_param{registry_value} = $reg;
-            }
-            elsif ( $current_path =~ /label$/ ) {
-                $reg_param{registry_value} = ref $reg eq 'CODE' ? $reg->() : $reg;
             }
             else {
                 require MT::Util::YAML;
@@ -162,17 +165,24 @@ sub find_desc {
         my @descs;
         while ( scalar @path ) {
             $end_path = ( pop @path ) . ( $end_path ? '/' . $end_path : '' );
-            my $description = MT->registry(
-                'registry_descriptions', @path, $end_path
-            );
-            if ( 'HASH' eq ref $description ) {
-                $description = $description->{_};
+            my $descriptions;
+            eval {
+                $descriptions = MT->registry(
+                    'registry_descriptions', @path, $end_path
+                );
+            };
+            next if $@;
+            if ( 'HASH' eq ref $descriptions ) {
+                $descriptions = $descriptions->{_};
             }
-            if ( $description ) {
-                if ( $description =~ /sub \{/ || $description =~ /^\$.*::/ ) {
+            next if !$descriptions;
+            $descriptions = [ $descriptions ] if 'ARRAY' ne ref $descriptions;
+            for my $description ( @$descriptions ) {
+                if ( $description =~ /\s*sub\s*\{/ || $description =~ /^\$.*::/ ) {
                     my $code = MT->handler_to_coderef($description);
                     $description = $code->($orig_path, $path);
                 }
+                next if !$description;
                 my $for = join ( '/', @path ) . '/' . $end_path;
                 $for = '/' . $for if $for !~ m{^/};
                 $description = {

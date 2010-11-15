@@ -1,0 +1,6 @@
+*:
+    _: Type of list you want to show.
+    object_label:
+        _: Name of object you want to display.
+asset:
+    _: Definitions for the asset list screen.
