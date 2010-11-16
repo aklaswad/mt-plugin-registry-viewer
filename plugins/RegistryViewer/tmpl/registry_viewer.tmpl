@@ -113,13 +113,37 @@ ul#breadcrumb li a:hover {
 <mt:if name="__last__"></dl></mt:if>
 </mt:loop>
 
+<mt:loop name="wild_descs">
+    <mt:if name="__first__">
+    <p><h3>Possible values</h3>
+    </mt:if>
+
+        <dl>
+            <dt><a href="<mt:var name="link">" class="child-link"><mt:var name="name"></a></dt>
+            <dd>
+                <p class="short-desc"><mt:var name="desc"></p>
+                <mt:loop name="descs">
+                    <p class="short-desc"><mt:var name="desc"></p>
+                </mt:loop>
+
+            <mt:if name="values"><mt:loop name="values">
+                <span class="component-name <mt:var name="component">"><mt:var name="component"></span>
+                <span class="hash-value"><mt:var name="value" trim_to="30" encode_html="1"></span>
+            </mt:loop></mt:if>
+            </dd>
+        </dl>
+    <mt:if name="__last__"></p></mt:if>
+</mt:loop>
+
 <mt:if name="type" eq="HASH">
-    <p><h3>Values</h3>
+    <p><h3>Current values</h3>
     <ul>
     <mt:loop name="child_keys">
         <dl>
-            <dt><a href="<mt:var name="link">" class="child-link"><mt:var name="label"></a></dt>
+            <dt><a href="<mt:var name="link">" class="child-link"><mt:var name="name"></a></dt>
             <dd>
+                <p class="short-desc"><mt:var name="desc"></p>
+
                 <mt:loop name="descs">
                     <p class="short-desc"><mt:var name="desc"></p>
                 </mt:loop>
@@ -135,7 +159,7 @@ ul#breadcrumb li a:hover {
     </p>
 <mt:else name="registries">
     <p id="registry_value">
-    <h3>values</h3>
+    <h3>Current values</h3>
     <ul>
     <mt:loop name="registries">
         <li>
