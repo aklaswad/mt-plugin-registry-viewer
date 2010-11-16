@@ -4,10 +4,11 @@ _: Start point for definitions of elements of each list screens.
     sub {
         my ($paths) = @_;
         require MT::ListProperty;
+        my $out = 'Attributes of list properties.';
         my ( $class, $id ) = ( $paths->[1], $paths->[2] );
+        return $out if ( $class =~ /\W/ || $id =~ /\W/ );
         my $prop = MT::ListProperty->instance($class, $id);
         my $base = $prop->{base};
-        my $out = 'Attributes of list properties.';
         if ( $base ) {
             my ( $base_class, $base_id ) = split '\.', $base;
             my $link = RegistryViewer::uri( 'list_properties', $base_class, $base_id );
