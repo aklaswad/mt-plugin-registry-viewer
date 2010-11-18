@@ -1,0 +1,57 @@
+=pod
+
+=head1 NAME
+
+MT Registry Viewer
+
+=head1 DESCRIPTION
+
+This plugin add screens that to explore deep hash of Movable Type registry which
+can open from menus in Tools >> Registry Viewer.
+You can see what values are now installed into your system, or see descriptions
+how to use registry to write plugins.
+
+=head1 ADD DESCRIPTIONS
+
+Registry Viewer searches description from registry_descriptions aref of registry.
+
+ registry_descriptions:
+     foo: Description of /foo
+
+ofcourse you can use deep hash;
+
+ registry_descriptions:
+     foo:
+         bar: Description of /foo/bar
+
+if you want to add description for the middle of hash tree, use '_' for key;
+
+ registry_descriptions:
+     foo:
+         _: Description of /foo
+         bar: Description of /foo/bar
+
+if you want to display some dynamic contents, you can use handler which MT can
+understand.
+
+ registry_descriptions:
+     foo: |
+         sub {
+             $this_registry_path_as_array_ref = shift;
+             #Do something
+             return "description of /foo";
+         }
+     bar: $MyPlugin::MyPlugin::description_handler_method
+
+You may use star mark ( * ) and keyword with round bracket as wildcard.
+
+ registry_descriptions:
+     foo:
+         *: This could be shown on both /foo/bar and /foo/buz...
+         (foo_id): This also displayed on /foo/* screen, but this is better because it's more descriptive.
+
+You may use slash mark for alternative way of deeper hash
+
+ registry_descriptions:
+     foo/bar/buz: Description of /foo/bar/buz.
+     foo/(foo_class)/buz: may use wildcard.
