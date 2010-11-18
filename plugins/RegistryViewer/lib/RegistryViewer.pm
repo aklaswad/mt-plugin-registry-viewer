@@ -200,6 +200,7 @@ sub find_desc {
         }
         push @this_key, $regex;
         for my $hash_key ( keys %$r ) {
+            next if '_' eq $hash_key;
             my $match;
             {
                 local $" = '/';
