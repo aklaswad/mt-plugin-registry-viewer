@@ -91,9 +91,8 @@ sub run {
         $registries{$c} = $reg;
     }
     my $type = $param{type} = $last_type;
-
     my @wild_descs = find_desc( path => [ @paths, '+' ] );
-    $param{wild_descs} = [ sort { $a->{name} cmp $b->{name} } grep { $_->{for} =~ m/\*/ } @wild_descs ]
+    $param{wild_descs} = [ sort { $a->{name} cmp $b->{name} } grep { $_->{for} =~ m/\*|\(\w+\)/ } @wild_descs ]
         if scalar @wild_descs;
 
     if ( $type eq 'HASH' ) {
@@ -115,7 +114,7 @@ sub run {
                     value     => $c_value,
                 };
             }
-            my @descs = find_desc( path => \@child_paths, no_wild => 1 );
+            my @descs = find_desc( path => \@child_paths, wild => 0 );
             push @child_keys,
 
             {
@@ -159,118 +158,92 @@ sub run {
 
 sub find_desc {
     my ( %opts ) = @_;
-    my $path      = $opts{path};
-    my $orig_path = $opts{orig_path};
-    my $idx       = $opts{idx} || 0;
-    $orig_path = [ @$path ] unless defined $orig_path;
+    my $path         = $opts{path};
+    my $depth        = $opts{depth} || 0;
+    my $wild         = exists $opts{wild} ? $opts{wild} : 1;
+    my $orig_path    = exists $opts{orig_path} ? $opts{orig_path} : [ @$path ];
+    my $current_path = $opts{current_path} || [];
     return if !defined $path;
-    return if !scalar @$path;
-    if ( $idx == scalar @$path ) {
-        return _get_desc($path, $orig_path);
-    }
-    my @clone = @$path;
-    my @descriptions;
 
-    for my $wild ( 0..( $opts{no_wild} ? 0 : 1 ) ) {
-        if ( $wild ) {
-            next if $clone[$idx] eq '*' || $clone[$idx] eq '+';
-            $clone[$idx] = '*';
-        }
-        my @moredescs = find_desc(
-            %opts,
-            path      => \@clone,
-            orig_path => $orig_path,
-            idx       => $idx + 1, );
-        push @descriptions, @moredescs;
+    my @rest_path = @$path;
+    my $r = MT->registry('registry_descriptions', @$current_path);
+    if ( 'HASH' ne ref $r ) {
+        return ( make_desc(
+            name  => $opts{name},
+            value => $r,
+            path  => $current_path,
+        )) if !scalar @rest_path;
+        return ();
     }
-    return @descriptions;
+
+    my @results;
+    if ( $r->{_} && !scalar @rest_path ) {
+        push @results, ( make_desc(
+            name  => $opts{name},
+            value => $r->{_},
+            path  => $current_path,
+        ));
+    }
+
+    my @this_key;
+    while ( my $this_key = shift @rest_path ) {
+        my $regex;
+        my $key = quotemeta($this_key);
+        if ( $this_key eq '+' ) {
+            $regex .= '([^/]+)';
+        }
+        elsif ( $wild && $this_key ne '*' ) {
+            $regex .= '(' . $key . '|\(\w+\)|\*)';
+        }
+        else {
+            $regex .= '(' . $key . ')';
+        }
+        push @this_key, $regex;
+        for my $hash_key ( keys %$r ) {
+            my $match;
+            {
+                local $" = '/';
+                $match = $hash_key =~ /^@this_key$/;
+            }
+            if ( $match ) {
+                push @results, find_desc(
+                    path         => \@rest_path,
+                    depth        => $depth + 1,
+                    wild         => $wild,
+                    orig_path    => $orig_path,
+                    name         => $hash_key,
+                    current_path => [ @$current_path, $hash_key ],
+                );
+            }
+        }
+    }
+    return @results;
 }
 
-sub _get_desc {
-    my ( $path, $orig_path ) = @_;
-    my $end_path;
-    my @path = @$path;
-    my $lastname = $path->[-1];
-    my $super_wild = $lastname eq '+' ? 1 : 0;
-    my @descs;
-    BASEPATH:
-    while ( scalar @path ) {
-        $end_path = ( pop @path ) . ( $end_path ? '/' . $end_path : '' );
-        my $descriptions = [];
-        my %descriptions;
-        my $vals;
-        eval {
-            $vals = MT->registry(
-                'registry_descriptions', @path, $end_path
-            );
-        };
-        next BASEPATH if $@;
-        $vals = [ $vals ] if 'ARRAY' ne ref $vals;
-        for my $v ( @$vals ) {
-            push @$descriptions, { desc => $v, name => $lastname };
-            $descriptions{$lastname} = 1;
-        }
-        if ( $super_wild ) {
-            my $hash;
-            eval {
-                $hash = MT->registry(
-                    'registry_descriptions', @path,
-                );
-            };
-            next BASEPATH if $@;
-            next BASEPATH if 'HASH' ne ref $hash;
-            my $path_base = $end_path;
-            $path_base =~ s/\+$//;
-            $path_base = quotemeta($path_base);
-            KEY:
-            for my $k ( keys %$hash ) {
-                if ( $k =~ m/^$path_base([^\/]+)$/ ) {
-                    my $name = $1;
-                    next KEY if $name eq '_';
-                    next KEY if $descriptions{$name};
-                    $descriptions{$name} = 1;
-                    my $vals = MT->registry( 'registry_descriptions', @path, $k);
-                    $vals = [ $vals ] if 'ARRAY' ne ref $vals;
-                    for my $v ( @$vals ) {
-                        push @$descriptions, { desc => $v, name => $name };
-                    }
-                }
-            }
-        }
+sub make_desc {
+    my ( %opts ) = @_;
+    my $values = $opts{value};
+    my @path   = @{$opts{path}};
+    my $name   = $opts{name};
+    $values = [$values] unless ref $values;
+    @path = map { split '\/', $_ } @path;
 
-        next BASEPATH if !$descriptions;
-        for my $desc_hash ( @$descriptions ) {
-            my $description = $desc_hash->{desc};
-            my $name = $desc_hash->{name};
-            if ( 'HASH' eq ref $description ) {
-                $description = $description->{_};
-            }
-            if ( $description =~ /\s*sub\s*\{/ || $description =~ /^\$.*::/ ) {
-                my $code = MT->handler_to_coderef($description);
-                $description = $code->($orig_path, $path);
-            }
-            next if !$description;
-            my $link;
-            if ( $super_wild ) {
-                my @wpath = @$path;
-                pop @wpath;
-                $link = uri(@wpath, $name);
-            }
-            else {
-                $link = uri(@$path);
-            }
-            my $for = join ( '/', @path ) . '/' . $end_path;
-            if ( $super_wild ) {
-                $for =~ s/\+$/$name/;
-            }
-            $for = '/' . $for if $for !~ m{^/};
-            push @descs, {
-                name => $name,
-                for  => $for,
-                desc => $description,
-                link => $link,
-            };
+    if ( $name =~ m{/} ) {
+        my @names = split '\/', $name;
+        $name = pop @names;
+    }
+    my @descs;
+    for my $desc ( @$values ) {
+        if ( $desc =~ /\s*sub\s*\{/ || $desc =~ /^\$.*::/ ) {
+            my $code = MT->handler_to_coderef($desc);
+            $desc = $code->(\@path);
         }
+        push @descs, {
+            name => $name,
+            for  => join( '/', @path),
+            desc => $desc,
+            link => uri( @path ),
+        };
     }
     return @descs;
 }

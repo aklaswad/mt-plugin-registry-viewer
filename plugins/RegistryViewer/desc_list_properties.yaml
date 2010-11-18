@@ -1,6 +1,6 @@
 _: Start point for definitions of elements of each list screens.
-*: List class name for the properties under this.
-*/*: |
+(list_class): List class name for the properties under this.
+(list_class)/(class_id): |
     sub {
         my ($paths) = @_;
         require MT::ListProperty;
