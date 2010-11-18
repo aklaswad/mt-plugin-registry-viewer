@@ -169,9 +169,10 @@ sub find_desc {
     my $r = MT->registry('registry_descriptions', @$current_path);
     if ( 'HASH' ne ref $r ) {
         return ( make_desc(
-            name  => $opts{name},
-            value => $r,
-            path  => $current_path,
+            name      => $opts{name},
+            value     => $r,
+            path      => $current_path,
+            orig_path => $orig_path,
         )) if !scalar @rest_path;
         return ();
     }
@@ -179,9 +180,10 @@ sub find_desc {
     my @results;
     if ( $r->{_} && !scalar @rest_path ) {
         push @results, ( make_desc(
-            name  => $opts{name},
-            value => $r->{_},
-            path  => $current_path,
+            name      => $opts{name},
+            value     => $r->{_},
+            path      => $current_path,
+            orig_path => $orig_path,
         ));
     }
 
@@ -223,9 +225,10 @@ sub find_desc {
 
 sub make_desc {
     my ( %opts ) = @_;
-    my $values = $opts{value};
-    my @path   = @{$opts{path}};
-    my $name   = $opts{name};
+    my $values    = $opts{value};
+    my @path      = @{$opts{path}};
+    my $name      = $opts{name};
+    my $orig_path = $opts{orig_path};
     $values = [$values] unless ref $values;
     @path = map { split '\/', $_ } @path;
 
@@ -237,7 +240,7 @@ sub make_desc {
     for my $desc ( @$values ) {
         if ( $desc =~ /\s*sub\s*\{/ || $desc =~ /^\$.*::/ ) {
             my $code = MT->handler_to_coderef($desc);
-            $desc = $code->(\@path);
+            $desc = $code->($orig_path, \@path);
         }
         push @descs, {
             name => $name,
