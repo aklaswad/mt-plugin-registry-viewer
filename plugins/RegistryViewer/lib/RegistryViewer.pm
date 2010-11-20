@@ -53,6 +53,7 @@ sub view {
 sub run {
     my $plugin = shift;
     my @paths  = @_;
+    my $path   = join '/', @paths;
     my %param;
     my $current_path = $paths[-1];
     my @parent_path;
@@ -69,8 +70,12 @@ sub run {
     $param{breadcrumb} = \@breadcrumb;
 
     ## Get description of current path.
-    my @descriptions = find_desc( path => \@paths );
-    $param{descriptions} = \@descriptions;
+    $param{description} = [ find_desc( path => \@paths, wild => 0 ) ];
+
+    ## Get description of current path.
+    $param{more_descriptions}
+        = [ grep { $_->{for} =~ /\*|\(\w+\)/ && $_->{for} ne $path }
+            find_desc( path => \@paths ) ];
 
     ## Get Possible values.
     my @wild_descs = find_desc( path => [ @paths, '+' ] );
@@ -170,16 +175,24 @@ sub run {
 
 sub find_desc {
     my (%opts) = @_;
-    my $path = $opts{path};
-    my $base_path = $opts{base_path} || 'registry_descriptions';
-    my $depth     = $opts{depth}     || 0;
-    my $wild      = exists $opts{wild}      ? $opts{wild}      : 1;
-    my $orig_path = exists $opts{orig_path} ? $opts{orig_path} : [@$path];
+    my $component_id = $opts{component};
+    if ( !defined $component_id ) {
+        my @components = sort keys %MT::Components;
+        return map { find_desc( component => $_, %opts ) } @components;
+    }
+    my $path         = $opts{path};
+    my $base_path    = $opts{base_path} || 'registry_descriptions';
+    my $depth        = $opts{depth} || 0;
+    my $wild         = exists $opts{wild} ? $opts{wild} : 1;
+    my $orig_path    = exists $opts{orig_path} ? $opts{orig_path} : [@$path];
     my $current_path = $opts{current_path} || [];
     return if !defined $path;
 
     my @rest_path = @$path;
-    my $r = MT->registry( $base_path, @$current_path );
+    my @results;
+    my $component = MT->component($component_id);
+    my $r = $component->registry( $base_path, @$current_path );
+    return unless defined $r;
     if ( 'HASH' ne ref $r ) {
         return (
             make_desc(
@@ -187,12 +200,12 @@ sub find_desc {
                 value     => $r,
                 path      => $current_path,
                 orig_path => $orig_path,
+                component => $component_id,
             )
         ) if !scalar @rest_path;
-        return ();
+        return;
     }
 
-    my @results;
     if ( $r->{_} && !scalar @rest_path ) {
         push(
             @results,
@@ -201,6 +214,7 @@ sub find_desc {
                     value     => $r->{_},
                     path      => $current_path,
                     orig_path => $orig_path,
+                    component => $component_id,
                 )
             )
         );
@@ -221,7 +235,8 @@ sub find_desc {
         }
         push @this_key, $regex;
         for my $hash_key ( keys %$r ) {
-            next if '_' eq $hash_key;
+            next if '_'      eq $hash_key;
+            next if 'plugin' eq $hash_key;
             my $match;
             {
                 local $" = '/';
@@ -238,6 +253,7 @@ sub find_desc {
                         orig_path    => $orig_path,
                         name         => $hash_key,
                         current_path => [ @$current_path, $hash_key ],
+                        component    => $component_id,
                     )
                 );
             }
@@ -252,6 +268,7 @@ sub make_desc {
     my @path      = @{ $opts{path} };
     my $name      = $opts{name};
     my $orig_path = $opts{orig_path};
+    my $component = $opts{component};
     $values = [$values] unless ref $values;
     @path = map { split '\/', $_ } @path;
 
@@ -267,10 +284,11 @@ sub make_desc {
         }
         push(
             @descs,
-            {   name => $name,
-                for  => join( '/', @path ),
-                desc => $desc,
-                link => uri(@path),
+            {   name      => $name,
+                for       => join( '/', @path ),
+                desc      => $desc,
+                link      => uri(@path),
+                component => $component,
             }
         );
     }

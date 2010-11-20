@@ -103,13 +103,26 @@ ul#breadcrumb li a:hover {
 
 <p>Type: <mt:var name="type"></p>
 
-<mt:loop name="descriptions">
+<mt:loop name="description">
 <mt:if name="__first__">
-<h3>Descriptions</h3>
+<h3>Description</h3>
+</mt:if>
+<p class="description">
+    <mt:var name="desc">
+    <span class="component-name <mt:var name="component">"><mt:var name="component"></span>
+</p>
+</mt:loop>
+
+<mt:loop name="more_descriptions">
+<mt:if name="__first__">
+<h3>More Descriptions</h3>
 <dl>
 </mt:if>
 <dt><mt:var name="for"></dt>
-<dd><mt:var name="desc"><dd>
+<dd>
+    <mt:var name="desc">
+    <span class="component-name <mt:var name="component">"><mt:var name="component"></span>
+<dd>
 <mt:if name="__last__"></dl></mt:if>
 </mt:loop>
 
@@ -121,11 +134,10 @@ ul#breadcrumb li a:hover {
         <dl>
             <dt><a href="<mt:var name="link">" class="child-link"><mt:var name="name"></a></dt>
             <dd>
-                <p class="short-desc"><mt:var name="desc"></p>
-                <mt:loop name="descs">
-                    <p class="short-desc"><mt:var name="desc"></p>
-                </mt:loop>
-
+                <p class="desc">
+                    <mt:var name="desc">
+                    <span class="component-name <mt:var name="component">"><mt:var name="component"></span>
+                </p>
             <mt:if name="values"><mt:loop name="values">
                 <span class="component-name <mt:var name="component">"><mt:var name="component"></span>
                 <span class="hash-value"><mt:var name="value" trim_to="30" encode_html="1"></span>
@@ -136,7 +148,7 @@ ul#breadcrumb li a:hover {
 </mt:loop>
 
 <mt:if name="type" eq="HASH">
-    <p><h3>Current values</h3>
+    <p><h3>Current Values</h3>
     <ul>
     <mt:loop name="child_keys">
         <dl>
@@ -159,7 +171,7 @@ ul#breadcrumb li a:hover {
     </p>
 <mt:else name="registries">
     <p id="registry_value">
-    <h3>Current values</h3>
+    <h3>Current Values</h3>
     <ul>
     <mt:loop name="registries">
         <li>
