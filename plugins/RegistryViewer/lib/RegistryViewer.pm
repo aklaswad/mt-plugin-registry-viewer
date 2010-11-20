@@ -282,6 +282,20 @@ sub make_desc {
             my $code = MT->handler_to_coderef($desc);
             $desc = $code->( $orig_path, \@path );
         }
+        $desc =~ s{\[\[(.*?)\]\]}{
+            my $path = $1;
+            my $out;
+            if ( $path =~ m/\// ) {
+                my @linkpath = split '\/', $path;
+                $out = sprintf '<a href="%s">%s</a>', uri(@linkpath), $path;
+            }
+            else {
+                my @linkpath = @path;
+                @linkpath[-1] = $path;
+                $out = sprintf '<a href="%s">%s</a>', uri(@linkpath), $path;
+            }
+            $out;
+        }eg;
         push(
             @descs,
             {   name      => $name,
