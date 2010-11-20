@@ -285,17 +285,27 @@ sub make_desc {
         $desc =~ s{\[\[(.*?)\]\]}{
             my $path = $1;
             my $out;
-            if ( $path =~ m/\// ) {
-                my @linkpath = split '\/', $path;
-                $out = sprintf '<a href="%s">%s</a>', uri(@linkpath), $path;
+            my @linkpath = @path;
+            if ( $path =~ m!^/! ) {
+                @linkpath = ();
             }
-            else {
-                my @linkpath = @path;
-                @linkpath[-1] = $path;
-                $out = sprintf '<a href="%s">%s</a>', uri(@linkpath), $path;
+            for my $node ( split('/', $path) ) {
+                next unless $node;
+                next if $node eq '.';
+                if ( $node eq '..' ) {
+                    pop @linkpath;
+                }
+                elsif ( $node eq '.' ) {
+                    @linkpath = @path;
+                }
+                else {
+                    push @linkpath, $node;
+                }
             }
-            $out;
+            $path = $linkpath[-1] if $path =~ /\/$/;
+            sprintf '<a href="%s">%s</a>', uri(@linkpath), $path;
         }eg;
+
         push(
             @descs,
             {   name      => $name,
