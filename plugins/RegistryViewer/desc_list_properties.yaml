@@ -1,18 +1,5 @@
-_: Start point for definitions of elements of each list screens.
-(list_class): List class name for the properties under this.
-(list_class)/(class_id): |
-    sub {
-        my ($paths) = @_;
-        require MT::ListProperty;
-        my $out = 'Attributes of list properties.';
-        my ( $class, $id ) = ( $paths->[1], $paths->[2] );
-        return $out if ( $class =~ /\W/ || $id =~ /\W/ );
-        my $prop = MT::ListProperty->instance($class, $id);
-        my $base = $prop->{base};
-        if ( $base ) {
-            my ( $base_class, $base_id ) = split '\.', $base;
-            my $link = RegistryViewer::uri( 'list_properties', $base_class, $base_id );
-            $out .= qq{<p>$class.$id is inheriting some attributes from: <a href="$link">$base</a></p>};
-        }
-        return $out;
-    }
+_: Listing Framework上で扱う、フィルタや表示カラムの定義などの、各リストの子要素を定義します。
+(list_class): |
+    記述するリストのクラスを指定します。このエントリー以下にリストの表時やフィルタを行う要素を[[(property_id)]]として追加していく事で、リストの詳細な動作を定義します。
+    リスト表示の初期状態や、スクリーンの表示名等、画面全体に関わる設定については[[/listing_screens/(list_class)]]に同名のクラスを指定して設定を行います。
+(list_class)/(property_id): desc_list_properties_attrs.yaml
